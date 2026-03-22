@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GateKit — Modal Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --black:#0a0a08; --surface:#161614; --border:rgba(255,255,255,0.08); --white:#f5f4ef; --muted:#888880; --accent:#d4f060; --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif; }
+  body { background: var(--black); color: var(--white); font-family: var(--sans); min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 32px; padding: 40px 20px; }
+  h1 { font-family: var(--mono); font-size: 13px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; max-width: 640px; width: 100%; }
+  .demo-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .demo-card-label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .demo-card-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* Trigger button styles */
+  .demo-trigger {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 18px; border-radius: 7px;
+    background: var(--white); color: var(--black);
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    cursor: pointer; border: none; transition: opacity 0.15s;
+    text-decoration: none;
+  }
+  .demo-trigger:hover { opacity: 0.88; }
+
+  .demo-trigger-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .demo-trigger-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+
+  .accent-trigger {
+    background: var(--accent); color: var(--black);
+  }
+
+  pre {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 20px;
+    font-family: var(--mono); font-size: 12px; color: #b8d670;
+    line-height: 1.7; max-width: 640px; width: 100%;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+  }
+  .label { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; max-width: 640px; width: 100%; }
+</style>
+</head>
+<body>
+
+<h1>GateKit — embed demo</h1>
+
+<div class="demo-grid">
+  <div class="demo-card">
+    <div class="demo-card-label">Primary trigger</div>
+    <div class="demo-card-desc">Use on your contact button or support link.</div>
+    <button class="demo-trigger" data-gk-trigger>Contact support →</button>
+  </div>
+  <div class="demo-card">
+    <div class="demo-card-label">Ghost variant</div>
+    <div class="demo-card-desc">For secondary placement in nav or footer.</div>
+    <button class="demo-trigger demo-trigger-ghost" data-gk-trigger>Get help</button>
+  </div>
+  <div class="demo-card">
+    <div class="demo-card-label">Accent variant</div>
+    <div class="demo-card-desc">High-visibility CTA, e.g. inside a product.</div>
+    <button class="demo-trigger accent-trigger" data-gk-trigger>Need help? →</button>
+  </div>
+  <div class="demo-card">
+    <div class="demo-card-label">JS API</div>
+    <div class="demo-card-desc">Open the gate from your own code.</div>
+    <button class="demo-trigger demo-trigger-ghost" onclick="GateKit.open()">GateKit.open()</button>
+  </div>
+</div>
+
+<div class="label">Embed snippet</div>
+<pre>&lt;!-- Add before &lt;/body&gt; — replace "yourname" with your Gate ID --&gt;
+&lt;script
+  src="https://cdn.gatekit.io/gate.js"
+  data-id="yourname"
+  data-price="1"
+  data-brand="true"
+&gt;&lt;/script&gt;
+
+&lt;!-- Then trigger it anywhere: --&gt;
+&lt;button data-gk-trigger&gt;Contact support →&lt;/button&gt;
+
+&lt;!-- Or via JS: --&gt;
+&lt;script&gt;GateKit.open()&lt;/script&gt;</pre>
+
+<!-- ── The actual embed script (pointing to local file for demo) ── -->
+<script>
+// Inline demo gate data (simulates what the API returns)
+window.__GK_DEMO__ = {
+  name: 'Marc',
+  tagline: 'I build TrustMRR solo — no team, no VC',
+  price: 1,
+  contact_url: 'mailto:marc@example.com',
+  faq_url: 'https://example.com/faq',
+  checkout_url: '#demo-checkout',
+  faqs: [
+    { q: 'How does the $1 unlock work?', a: "A one-time $1 payment gives you lifetime access to direct support. It's a spam filter, not a subscription." },
+    { q: "I'm already a paying customer — do I need to pay again?", a: 'No. Just mention your order email when you reach out and we\'ll verify it manually.' },
+    { q: 'How fast do you respond?', a: 'Usually within 24 hours on weekdays. No bots — you get a reply from me directly.' },
+    { q: "What if my question isn't in the FAQ?", a: 'Unlock support for $1 and send your question. I\'ll get back to you.' },
+  ]
+};
+</script>
+<script src="gate.js" data-id="demo" data-price="1" data-brand="true" data-api="__demo__"></script>
+<script>
+// Patch fetchGate for local demo (no real API)
+// In production, gate.js hits https://api.gatekit.io/gate/:id
+// Override the API fetch for this demo page only
+const _origFetch = window.fetch;
+window.fetch = function(url, ...args) {
+  if (typeof url === 'string' && url.includes('__demo__')) {
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(window.__GK_DEMO__) });
+  }
+  return _origFetch.call(this, url, ...args);
+};
+</script>
+
+</body>
+</html>

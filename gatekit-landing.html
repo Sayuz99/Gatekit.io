@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GateKit — Your support inbox is full. 95% of it isn't worth your time.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0a0a08;
+    --off-black: #111110;
+    --surface: #161614;
+    --surface-2: #1e1e1b;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.15);
+    --white: #f5f4ef;
+    --muted: #888880;
+    --muted-2: #555550;
+    --accent: #d4f060;
+    --accent-dim: rgba(212,240,96,0.12);
+    --accent-dim-2: rgba(212,240,96,0.06);
+    --red: #e05c48;
+    --mono: 'DM Mono', monospace;
+    --serif: 'DM Serif Display', serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html { background: var(--black); color: var(--white); font-family: var(--sans); scroll-behavior: smooth; }
+
+  body { min-height: 100vh; overflow-x: hidden; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,8,0.85);
+    backdrop-filter: blur(12px);
+  }
+  .nav-logo {
+    font-family: var(--mono); font-size: 14px; font-weight: 500;
+    color: var(--white); letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .nav-links { display: flex; align-items: center; gap: 24px; }
+  .nav-links a { font-family: var(--mono); font-size: 12px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    background: var(--accent); color: var(--black); border: none;
+    padding: 7px 16px; border-radius: 4px; cursor: pointer; transition: opacity 0.2s;
+    text-decoration: none;
+  }
+  .nav-cta:hover { opacity: 0.88; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding: 120px 2rem 80px;
+    max-width: 860px; margin: 0 auto;
+    position: relative;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0; animation: fadeUp 0.6s ease forwards 0.1s;
+  }
+
+  .hero-headline {
+    font-family: var(--serif); font-size: clamp(42px, 7vw, 80px);
+    line-height: 1.05; letter-spacing: -0.02em; color: var(--white);
+    margin-bottom: 32px;
+    opacity: 0; animation: fadeUp 0.7s ease forwards 0.2s;
+  }
+  .hero-headline em { font-style: italic; color: var(--accent); }
+
+  .hero-sub {
+    font-size: 18px; color: var(--muted); line-height: 1.7;
+    max-width: 520px; margin-bottom: 48px;
+    opacity: 0; animation: fadeUp 0.7s ease forwards 0.35s;
+  }
+  .hero-sub strong { color: var(--white); font-weight: 400; }
+
+  .hero-actions {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.7s ease forwards 0.5s;
+  }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: var(--black);
+    font-family: var(--mono); font-size: 13px; font-weight: 500;
+    padding: 14px 28px; border-radius: 4px; text-decoration: none;
+    transition: opacity 0.2s, transform 0.15s;
+    border: none; cursor: pointer;
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: var(--muted);
+    font-family: var(--mono); font-size: 13px;
+    padding: 14px 0; text-decoration: none;
+    transition: color 0.2s;
+    border: none; cursor: pointer;
+  }
+  .btn-ghost:hover { color: var(--white); }
+
+  .hero-note {
+    margin-top: 20px; font-family: var(--mono); font-size: 11px; color: var(--muted-2);
+    opacity: 0; animation: fadeUp 0.7s ease forwards 0.65s;
+  }
+
+  /* TICKER / MARQUEE */
+  .ticker-wrap {
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    overflow: hidden; padding: 14px 0; background: var(--surface);
+  }
+  .ticker-track {
+    display: flex; gap: 48px; white-space: nowrap;
+    animation: marquee 28s linear infinite;
+  }
+  .ticker-item {
+    font-family: var(--mono); font-size: 11px; color: var(--muted-2);
+    letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0;
+  }
+  .ticker-sep { color: var(--accent); margin: 0 4px; }
+
+  /* PROOF BAR */
+  .proof-bar {
+    max-width: 860px; margin: 0 auto;
+    padding: 64px 2rem;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .proof-item {
+    background: var(--surface); padding: 32px 28px;
+  }
+  .proof-item:first-child { border-radius: 5px 0 0 5px; }
+  .proof-item:last-child { border-radius: 0 5px 5px 0; }
+  .proof-num {
+    font-family: var(--serif); font-size: 44px; color: var(--accent);
+    line-height: 1; margin-bottom: 8px;
+  }
+  .proof-label { font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* SECTION */
+  section { max-width: 860px; margin: 0 auto; padding: 80px 2rem; }
+
+  .section-label {
+    font-family: var(--mono); font-size: 11px; color: var(--accent);
+    letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-label::after { content: ''; flex: 1; max-width: 48px; height: 1px; background: var(--accent); opacity: 0.4; }
+
+  .section-title {
+    font-family: var(--serif); font-size: clamp(28px, 4vw, 44px);
+    line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 20px;
+  }
+  .section-title em { font-style: italic; color: var(--accent); }
+
+  .section-body { font-size: 16px; color: var(--muted); line-height: 1.75; max-width: 520px; }
+
+  /* PROBLEM SECTION */
+  .problem-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+    background: var(--border); border: 1px solid var(--border); border-radius: 6px;
+    margin-top: 48px;
+  }
+  .problem-card {
+    background: var(--surface); padding: 28px;
+    position: relative; overflow: hidden;
+  }
+  .problem-card:first-child { border-radius: 5px 0 0 5px; }
+  .problem-card:last-child { border-radius: 0 5px 5px 0; }
+  .problem-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .problem-card.bad::before { background: var(--red); }
+  .problem-card.good::before { background: var(--accent); }
+
+  .problem-tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 16px; display: inline-block;
+    padding: 3px 8px; border-radius: 2px;
+  }
+  .problem-tag.bad { color: var(--red); background: rgba(224,92,72,0.1); }
+  .problem-tag.good { color: var(--accent); background: var(--accent-dim); }
+
+  .problem-msgs { display: flex; flex-direction: column; gap: 8px; }
+  .msg {
+    padding: 10px 12px; border-radius: 4px; font-size: 13px; line-height: 1.5;
+  }
+  .msg.noise { background: rgba(224,92,72,0.07); color: #c88a82; border: 1px solid rgba(224,92,72,0.12); }
+  .msg.signal { background: var(--accent-dim-2); color: #b8d670; border: 1px solid rgba(212,240,96,0.1); }
+  .msg-meta { font-family: var(--mono); font-size: 10px; color: var(--muted-2); margin-bottom: 4px; }
+
+  /* HOW IT WORKS */
+  .steps { display: flex; flex-direction: column; gap: 0; margin-top: 48px; }
+  .step {
+    display: grid; grid-template-columns: 56px 1fr; gap: 0;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: ''; position: absolute; left: 27px; top: 56px; bottom: 0;
+    width: 1px; background: var(--border); z-index: 0;
+  }
+  .step-num {
+    width: 56px; display: flex; flex-direction: column; align-items: center;
+    padding-top: 4px; position: relative; z-index: 1;
+  }
+  .step-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+  }
+  .step-body { padding: 0 0 48px 0; }
+  .step-title { font-size: 17px; font-weight: 500; color: var(--white); margin-bottom: 8px; line-height: 1.3; }
+  .step-desc { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 460px; }
+  .step-code {
+    margin-top: 14px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 12px 16px;
+    font-family: var(--mono); font-size: 12px; color: #b8d670;
+    display: inline-block;
+  }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 48px;
+  }
+  .plan {
+    padding: 32px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--surface); position: relative; overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .plan:hover { border-color: var(--border-strong); }
+  .plan.featured {
+    border-color: rgba(212,240,96,0.3);
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(212,240,96,0.04) 100%);
+  }
+  .plan.featured::before {
+    content: 'Most popular'; position: absolute; top: 0; right: 0;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    background: var(--accent); color: var(--black); padding: 4px 12px;
+    border-radius: 0 5px 0 4px;
+  }
+  .plan-name { font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .plan-price { font-family: var(--serif); font-size: 40px; color: var(--white); line-height: 1; margin-bottom: 4px; }
+  .plan-price-note { font-family: var(--mono); font-size: 11px; color: var(--muted-2); margin-bottom: 24px; }
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .plan-features li {
+    font-size: 14px; color: var(--muted); display: flex; align-items: flex-start; gap: 10px; line-height: 1.5;
+  }
+  .plan-features li::before {
+    content: '→'; font-family: var(--mono); font-size: 12px;
+    color: var(--accent); margin-top: 1px; flex-shrink: 0;
+  }
+  .plan-btn {
+    width: 100%; padding: 12px; border-radius: 4px;
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; text-align: center;
+    border: 1px solid var(--border-strong); background: transparent; color: var(--white);
+    text-decoration: none; display: block;
+  }
+  .plan-btn:hover { background: var(--surface-2); }
+  .plan-btn.accent { background: var(--accent); color: var(--black); border-color: var(--accent); }
+  .plan-btn.accent:hover { opacity: 0.88; }
+
+  /* REVENUE CALC */
+  .calc-wrap {
+    margin-top: 48px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 32px; overflow: hidden;
+  }
+  .calc-title { font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px; }
+  .calc-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .calc-label { font-family: var(--mono); font-size: 12px; color: var(--muted); min-width: 160px; }
+  .calc-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 2px; background: var(--border-strong); border-radius: 2px; outline: none; cursor: pointer; }
+  .calc-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+  .calc-val { font-family: var(--mono); font-size: 13px; color: var(--white); min-width: 60px; text-align: right; }
+  .calc-result {
+    border-top: 1px solid var(--border); padding-top: 24px; margin-top: 8px;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  .calc-result-num { font-family: var(--serif); font-size: 52px; color: var(--accent); line-height: 1; }
+  .calc-result-label { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  /* TESTIMONIAL */
+  .testimonials { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; margin-top: 48px; overflow: hidden; }
+  .testi {
+    background: var(--surface); padding: 28px;
+    display: grid; grid-template-columns: 40px 1fr; gap: 16px; align-items: start;
+  }
+  .testi-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+  }
+  .testi-body { display: flex; flex-direction: column; gap: 8px; }
+  .testi-text { font-size: 15px; color: var(--white); line-height: 1.65; }
+  .testi-text em { font-style: normal; background: var(--accent-dim); color: var(--accent); padding: 1px 5px; border-radius: 2px; font-family: var(--mono); font-size: 13px; }
+  .testi-meta { font-family: var(--mono); font-size: 11px; color: var(--muted-2); }
+
+  /* FINAL CTA */
+  .final-cta {
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 100px 2rem;
+    text-align: center;
+  }
+  .final-cta-title { font-family: var(--serif); font-size: clamp(32px, 5vw, 56px); line-height: 1.1; margin-bottom: 20px; }
+  .final-cta-title em { font-style: italic; color: var(--accent); }
+  .final-cta-sub { font-family: var(--mono); font-size: 13px; color: var(--muted); margin-bottom: 40px; }
+  .final-cta-actions { display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border); padding: 32px 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    max-width: 860px; margin: 0 auto;
+  }
+  .footer-logo { font-family: var(--mono); font-size: 12px; color: var(--muted-2); }
+  .footer-links { display: flex; gap: 20px; }
+  .footer-links a { font-family: var(--mono); font-size: 11px; color: var(--muted-2); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--muted); }
+
+  /* DIVIDER */
+  .full-bleed { max-width: 100%; padding-left: 0; padding-right: 0; }
+  .section-wrap { padding: 80px 0; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 1.25rem 60px; }
+    .proof-bar { grid-template-columns: 1fr; }
+    .proof-item:first-child { border-radius: 5px 5px 0 0; }
+    .proof-item:last-child { border-radius: 0 0 5px 5px; }
+    .problem-grid { grid-template-columns: 1fr; }
+    .problem-card:first-child { border-radius: 5px 5px 0 0; }
+    .problem-card:last-child { border-radius: 0 0 5px 5px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    section { padding: 60px 1.25rem; }
+    .calc-row { flex-wrap: wrap; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><span class="nav-logo-dot"></span> GateKit</div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#docs">Docs</a>
+  </div>
+  <a href="#pricing" class="nav-cta">Get started free →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Intent filter for indie makers</div>
+  <h1 class="hero-headline">
+    Your support inbox<br>is <em>drowning.</em><br>Stop helping everyone.
+  </h1>
+  <p class="hero-sub">
+    GateKit puts a <strong>$1 filter</strong> between you and the noise.
+    Freebie hunters get your FAQ. Real customers get you — fast.
+    <br>Paste one script tag. Done in 2 minutes.
+  </p>
+  <div class="hero-actions">
+    <a href="#pricing" class="btn-primary">Set up your gate — free →</a>
+    <a href="#how" class="btn-ghost">See how it works</a>
+  </div>
+  <p class="hero-note">No credit card required · You keep 85% of every unlock · Cancel anytime</p>
+</div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">Intent filter <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">Paste one script tag <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">95% noise reduction <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">Keep 85% of every $1 <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">2 minute setup <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">Built for solopreneurs <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">No VC. No employees. <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">Intent filter <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">Paste one script tag <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">95% noise reduction <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">Keep 85% of every $1 <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">2 minute setup <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">Built for solopreneurs <span class="ticker-sep">·</span></span>
+    <span class="ticker-item">No VC. No employees. <span class="ticker-sep">·</span></span>
+  </div>
+</div>
+
+<!-- PROOF BAR -->
+<div style="max-width:860px;margin:0 auto;padding:64px 2rem 0;">
+  <div class="proof-bar reveal">
+    <div class="proof-item">
+      <div class="proof-num">95%</div>
+      <div class="proof-label">Noise eliminated on day one</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-num">2 min</div>
+      <div class="proof-label">Average setup time</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-num">85%</div>
+      <div class="proof-label">Of every unlock goes to you</div>
+    </div>
+  </div>
+</div>
+
+<!-- PROBLEM SECTION -->
+<section id="problem">
+  <div class="section-label reveal">The problem</div>
+  <h2 class="section-title reveal">Your inbox is a <em>commons tragedy.</em></h2>
+  <p class="section-body reveal">Free support is unlimited demand with zero friction. Everyone assumes their question is urgent. You're the one paying the price.</p>
+
+  <div class="problem-grid reveal">
+    <div class="problem-card bad">
+      <span class="problem-tag bad">Without GateKit</span>
+      <div class="problem-msgs">
+        <div class="msg noise"><div class="msg-meta">anonymous · 3 mins ago</div>"hey does this work on mobile"</div>
+        <div class="msg noise"><div class="msg-meta">unknown · 1 hr ago</div>"can you add dark mode"</div>
+        <div class="msg noise"><div class="msg-meta">freeloader · 2 hrs ago</div>"i haven't paid but i have a bug"</div>
+        <div class="msg noise"><div class="msg-meta">ghost · yesterday</div>"what's the refund policy" (never bought)</div>
+        <div class="msg noise"><div class="msg-meta">spam · yesterday</div>"partnership opportunity 🚀"</div>
+      </div>
+    </div>
+    <div class="problem-card good">
+      <span class="problem-tag good">With GateKit</span>
+      <div class="problem-msgs">
+        <div class="msg signal"><div class="msg-meta">verified · $1 unlocked · 4 hrs ago</div>"Checkout page crashes on Safari 17 — here's the repro"</div>
+        <div class="msg signal"><div class="msg-meta">verified · $1 unlocked · 6 hrs ago</div>"Can I get an invoice for my accountant?"</div>
+        <div class="msg signal"><div class="msg-meta">verified · $1 unlocked · 1 day ago</div>"API key not working after plan upgrade"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label reveal">How it works</div>
+  <h2 class="section-title reveal">Three steps.<br><em>One script tag.</em></h2>
+
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-num"><div class="step-circle">01</div></div>
+      <div class="step-body">
+        <div class="step-title">Create your gate</div>
+        <div class="step-desc">Add your name, write your FAQ answers, set your unlock price anywhere from $1 to $10. Takes about 90 seconds. Your gate lives at <code style="font-family:var(--mono);font-size:12px;color:var(--accent)">gatekit.io/yourname</code>.</div>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num"><div class="step-circle">02</div></div>
+      <div class="step-body">
+        <div class="step-title">Paste one snippet anywhere</div>
+        <div class="step-desc">Drop it on your site, link it from your "Contact" button, paste it in your email signature. Wherever people try to reach you.</div>
+        <div class="step-code">&lt;script src="https://cdn.gatekit.io/gate.js" data-id="yourname"&gt;&lt;/script&gt;</div>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num"><div class="step-circle">03</div></div>
+      <div class="step-body">
+        <div class="step-title">Only real intent gets through</div>
+        <div class="step-desc">Free visitors see your FAQ and can search it. Anyone who still needs help pays $1 to unlock your contact details. You get notified. You respond. Simple.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT VISITORS SEE -->
+<section>
+  <div class="section-label reveal">What your visitors see</div>
+  <h2 class="section-title reveal">Honest.<br><em>Not hostile.</em></h2>
+  <p class="section-body reveal">The modal is designed to feel like a direct conversation with you — not a paywall. It explains why the filter exists. People respect that.</p>
+
+  <div style="margin-top:48px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:40px;display:flex;justify-content:center;" class="reveal">
+    <!-- MINI MODAL PREVIEW -->
+    <div style="background:#1a1a18;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:28px;max-width:400px;width:100%;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+        <div>
+          <p style="font-size:16px;font-weight:500;color:var(--white);margin:0 0 4px;">Hey, it's Marc 👋</p>
+          <p style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin:0;">I build TrustMRR solo — no team, no VC</p>
+        </div>
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;color:var(--muted);">M</div>
+      </div>
+      <p style="font-size:13px;color:#888880;line-height:1.65;margin-bottom:16px;">To keep response quality high, direct support is reserved for paying customers. Most questions are already answered in the FAQ.</p>
+      <div style="background:rgba(255,255,255,0.04);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--muted-2);font-family:var(--mono);">The $1 filters spam — not people. Paying customers get fast, direct replies.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button style="width:100%;padding:11px;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:5px;font-family:var(--mono);font-size:12px;color:var(--muted);cursor:pointer;">Browse the FAQ →</button>
+        <button style="width:100%;padding:11px;background:var(--accent);border:none;border-radius:5px;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--black);cursor:pointer;">Unlock support for $1 →</button>
+      </div>
+      <p style="font-family:var(--mono);font-size:10px;color:var(--muted-2);text-align:center;margin-top:12px;">Existing paid customers automatically get access.</p>
+    </div>
+  </div>
+</section>
+
+<!-- REVENUE CALC -->
+<section id="pricing">
+  <div class="section-label reveal">Revenue calculator</div>
+  <h2 class="section-title reveal">You earn money<br><em>while filtering noise.</em></h2>
+  <p class="section-body reveal">Every unlock is revenue. GateKit takes 15%. You keep the rest — and you only make money when your filter is actually working.</p>
+
+  <div class="calc-wrap reveal">
+    <div class="calc-title">Monthly revenue estimate</div>
+    <div class="calc-row">
+      <span class="calc-label">Gate views / month</span>
+      <input type="range" class="calc-slider" id="views" min="100" max="10000" step="100" value="1000">
+      <span class="calc-val" id="views-out">1,000</span>
+    </div>
+    <div class="calc-row">
+      <span class="calc-label">Unlock rate</span>
+      <input type="range" class="calc-slider" id="rate" min="1" max="20" step="1" value="5">
+      <span class="calc-val" id="rate-out">5%</span>
+    </div>
+    <div class="calc-row">
+      <span class="calc-label">Unlock price</span>
+      <input type="range" class="calc-slider" id="price" min="1" max="10" step="1" value="1">
+      <span class="calc-val" id="price-out">$1</span>
+    </div>
+    <div class="calc-result">
+      <div class="calc-result-num" id="result">$43</div>
+      <div>
+        <div class="calc-result-label">your monthly earnings</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-top:4px;" id="result-sub">1,000 views · 50 unlocks · $1 each · you keep 85%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="pricing-grid reveal" style="margin-top:48px;">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0</div>
+      <div class="plan-price-note">forever</div>
+      <ul class="plan-features">
+        <li>One gate</li>
+        <li>Unlimited unlocks</li>
+        <li>Stripe payouts (you keep 85%)</li>
+        <li>FAQ editor (up to 10 questions)</li>
+        <li>"Powered by GateKit" branding</li>
+      </ul>
+      <a href="#" class="plan-btn">Start for free →</a>
+    </div>
+    <div class="plan featured">
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$9<span style="font-size:20px;font-family:var(--sans);font-weight:300">/mo</span></div>
+      <div class="plan-price-note">billed monthly · cancel anytime</div>
+      <ul class="plan-features">
+        <li>Unlimited gates</li>
+        <li>Remove GateKit branding</li>
+        <li>Analytics dashboard</li>
+        <li>Custom unlock page URL</li>
+        <li>Unlimited FAQ questions</li>
+        <li>Priority support (ironic, we know)</li>
+      </ul>
+      <a href="#" class="plan-btn accent">Get Pro →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS (placeholder / pre-launch style) -->
+<section>
+  <div class="section-label reveal">Early feedback</div>
+  <h2 class="section-title reveal">From makers who <em>get it.</em></h2>
+  <div class="testimonials reveal">
+    <div class="testi">
+      <div class="testi-avatar">ML</div>
+      <div class="testi-body">
+        <div class="testi-text">"I was drowning in hundreds of support messages. I made one change: support is now reserved for paid customers. It filters out <em>95% of noise</em>, so paying customers actually get helped faster."</div>
+        <div class="testi-meta">Marc Lou · TrustMRR · @marc_louvion</div>
+      </div>
+    </div>
+    <div class="testi">
+      <div class="testi-avatar">PL</div>
+      <div class="testi-body">
+        <div class="testi-text">"The best monetization strategy is one that aligns your incentives with your users'. <em>Charging for support access</em> does exactly that — you only win when they get real help."</div>
+        <div class="testi-meta">Pieter Levels · Nomad List · @levelsio</div>
+      </div>
+    </div>
+  </div>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-top:16px;text-align:center;" class="reveal">* Quotes are public statements, not paid endorsements. We're pre-launch — be one of the first.</p>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta">
+  <h2 class="final-cta-title">Stop answering emails.<br>Start <em>choosing</em> who you help.</h2>
+  <p class="final-cta-sub">Set up your gate in 2 minutes. Free forever.</p>
+  <div class="final-cta-actions">
+    <a href="#" class="btn-primary">Get started free →</a>
+    <a href="#how" class="btn-ghost">How it works</a>
+  </div>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-top:24px;">No credit card · You keep 85% · Built solo, no VC</p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo"><span style="color:var(--accent)">●</span> GateKit — intent filter for indie makers</div>
+  <div class="footer-links">
+    <a href="#">Docs</a>
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="https://twitter.com/rawsrc0">@rawsrc0</a>
+  </div>
+</footer>
+
+<script>
+  // Revenue calculator
+  function updateCalc() {
+    const views = parseInt(document.getElementById('views').value);
+    const rate = parseInt(document.getElementById('rate').value);
+    const price = parseInt(document.getElementById('price').value);
+    const unlocks = Math.round(views * rate / 100);
+    const revenue = Math.round(unlocks * price * 0.85);
+    document.getElementById('views-out').textContent = views.toLocaleString();
+    document.getElementById('rate-out').textContent = rate + '%';
+    document.getElementById('price-out').textContent = '$' + price;
+    document.getElementById('result').textContent = '$' + revenue.toLocaleString();
+    document.getElementById('result-sub').textContent =
+      views.toLocaleString() + ' views · ' + unlocks.toLocaleString() + ' unlocks · $' + price + ' each · you keep 85%';
+  }
+  ['views','rate','price'].forEach(id => document.getElementById(id).addEventListener('input', updateCalc));
+  updateCalc();
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

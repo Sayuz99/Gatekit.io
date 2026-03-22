@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GateKit — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --black:#0a0a08;--off:#111110;--s1:#161614;--s2:#1c1c1a;--s3:#242420;
+  --b1:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.11);--b3:rgba(255,255,255,0.18);
+  --w:#f5f4ef;--m1:#888880;--m2:#555550;--m3:#333330;
+  --accent:#d4f060;--accent-bg:rgba(212,240,96,0.1);--accent-dim:rgba(212,240,96,0.06);
+  --green:#4ade80;--green-bg:rgba(74,222,128,0.1);
+  --red:#f87171;--red-bg:rgba(248,113,113,0.1);
+  --blue:#60a5fa;--blue-bg:rgba(96,165,250,0.1);
+  --amber:#fbbf24;--amber-bg:rgba(251,191,36,0.1);
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+  --r4:4px;--r6:6px;--r8:8px;--r12:12px;
+}
+html{background:var(--black);color:var(--w);font-family:var(--sans);font-size:14px;}
+body{min-height:100vh;display:flex;flex-direction:column;}
+
+/* ── LAYOUT ── */
+.app{display:flex;flex:1;min-height:100vh;}
+.sidebar{
+  width:220px;flex-shrink:0;background:var(--s1);
+  border-right:1px solid var(--b1);
+  display:flex;flex-direction:column;
+  padding:0;position:fixed;top:0;left:0;bottom:0;z-index:50;
+}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── SIDEBAR ── */
+.sb-logo{
+  padding:20px 20px 16px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--b1);
+}
+.sb-logo-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.sb-logo-text{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--w);}
+
+.sb-nav{padding:12px 10px;display:flex;flex-direction:column;gap:2px;flex:1;}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:var(--r6);
+  font-size:13px;color:var(--m1);cursor:pointer;
+  transition:all 0.15s;border:none;background:none;width:100%;text-align:left;
+}
+.sb-item:hover{color:var(--w);background:var(--b1);}
+.sb-item.active{color:var(--w);background:var(--b2);}
+.sb-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.7;}
+.sb-item.active svg{opacity:1;}
+.sb-badge{
+  margin-left:auto;font-family:var(--mono);font-size:10px;
+  background:var(--accent-bg);color:var(--accent);
+  padding:2px 6px;border-radius:var(--r4);
+}
+
+.sb-section{padding:6px 10px;font-family:var(--mono);font-size:10px;color:var(--m3);text-transform:uppercase;letter-spacing:0.08em;margin-top:8px;}
+
+.sb-footer{
+  padding:14px 20px;border-top:1px solid var(--b1);
+  display:flex;align-items:center;gap:10px;
+}
+.sb-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--accent-bg);border:1px solid var(--b2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;color:var(--accent);flex-shrink:0;
+}
+.sb-user-name{font-size:12px;color:var(--w);font-weight:500;}
+.sb-user-plan{font-family:var(--mono);font-size:10px;color:var(--m2);}
+
+/* ── TOPBAR ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:54px;border-bottom:1px solid var(--b1);
+  background:var(--off);flex-shrink:0;
+}
+.topbar-title{font-size:14px;font-weight:500;color:var(--w);}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:var(--r6);
+  font-family:var(--mono);font-size:12px;font-weight:500;
+  cursor:pointer;border:none;transition:all 0.15s;
+  text-decoration:none;
+}
+.btn-primary{background:var(--accent);color:var(--black);}
+.btn-primary:hover{opacity:0.88;}
+.btn-ghost{background:var(--b1);color:var(--m1);border:1px solid var(--b2);}
+.btn-ghost:hover{background:var(--b2);color:var(--w);}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(248,113,113,0.2);}
+.btn-danger:hover{background:rgba(248,113,113,0.18);}
+.btn-sm{padding:5px 10px;font-size:11px;}
+.btn svg{width:13px;height:13px;}
+
+/* ── PAGE CONTENT ── */
+.page{padding:28px;flex:1;display:none;}
+.page.active{display:block;}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);
+  padding:18px 20px;
+}
+.stat-label{font-family:var(--mono);font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+.stat-val{font-size:28px;font-weight:300;color:var(--w);line-height:1;margin-bottom:6px;font-family:var(--sans);}
+.stat-delta{font-family:var(--mono);font-size:11px;}
+.stat-delta.up{color:var(--green);}
+.stat-delta.dn{color:var(--red);}
+
+/* ── GATES TABLE ── */
+.table-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);overflow:hidden;}
+.table-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--b1);
+}
+.table-title{font-size:13px;font-weight:500;color:var(--w);}
+table{width:100%;border-collapse:collapse;}
+thead tr{border-bottom:1px solid var(--b1);}
+th{
+  padding:10px 20px;text-align:left;
+  font-family:var(--mono);font-size:10px;color:var(--m2);
+  text-transform:uppercase;letter-spacing:0.06em;font-weight:400;
+}
+td{padding:13px 20px;font-size:13px;color:var(--m1);border-bottom:1px solid var(--b1);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--b1);}
+.td-name{color:var(--w);font-weight:500;}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:var(--r4);
+}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);}
+.td-actions{display:flex;gap:6px;justify-content:flex-end;}
+
+/* ── CHART ── */
+.chart-wrap{
+  background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);
+  padding:20px;margin-bottom:24px;
+}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.chart-title{font-size:13px;font-weight:500;color:var(--w);}
+.chart-legend{display:flex;gap:16px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--m2);}
+.legend-dot{width:7px;height:7px;border-radius:50%;}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:100px;}
+.bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.bar-stack{display:flex;flex-direction:column;justify-content:flex-end;width:100%;gap:2px;}
+.bar{border-radius:var(--r4) var(--r4) 0 0;min-height:2px;transition:opacity 0.2s;}
+.bar:hover{opacity:0.8;}
+.bar-label{font-family:var(--mono);font-size:9px;color:var(--m3);}
+
+/* ── WIZARD ── */
+.wizard{
+  max-width:560px;margin:60px auto;padding:0 20px;
+}
+.wizard-progress{display:flex;align-items:center;gap:0;margin-bottom:48px;}
+.wz-step{
+  display:flex;align-items:center;gap:8px;flex:1;
+}
+.wz-step:last-child{flex:0;}
+.wz-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;flex-shrink:0;
+  transition:all 0.2s;
+}
+.wz-dot.done{background:var(--accent);color:var(--black);}
+.wz-dot.active{background:var(--b2);color:var(--w);border:1px solid var(--b3);}
+.wz-dot.pending{background:var(--b1);color:var(--m3);border:1px solid var(--b1);}
+.wz-line{flex:1;height:1px;background:var(--b2);margin:0 4px;}
+.wz-line.done{background:var(--accent);opacity:0.4;}
+
+.wz-panel{display:none;}
+.wz-panel.active{display:block;}
+.wz-title{font-size:22px;font-weight:400;color:var(--w);margin-bottom:6px;line-height:1.2;}
+.wz-sub{font-size:14px;color:var(--m1);margin-bottom:32px;line-height:1.65;}
+
+/* ── FORM ── */
+.field{margin-bottom:20px;}
+.field label{display:block;font-family:var(--mono);font-size:11px;color:var(--m2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--s2);border:1px solid var(--b2);
+  border-radius:var(--r8);padding:10px 14px;
+  font-family:var(--sans);font-size:13px;color:var(--w);
+  outline:none;transition:border-color 0.15s;
+  resize:vertical;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--b3);}
+.field input::placeholder,.field textarea::placeholder{color:var(--m3);}
+.field-hint{font-size:12px;color:var(--m2);margin-top:6px;line-height:1.5;}
+.field select option{background:var(--s2);}
+
+/* price slider */
+.price-track{display:flex;gap:8px;flex-wrap:wrap;}
+.price-chip{
+  padding:7px 14px;border-radius:var(--r6);
+  font-family:var(--mono);font-size:12px;cursor:pointer;
+  border:1px solid var(--b2);background:var(--s2);color:var(--m1);
+  transition:all 0.15s;
+}
+.price-chip.selected{background:var(--accent-bg);color:var(--accent);border-color:rgba(212,240,96,0.3);}
+
+/* FAQ editor */
+.faq-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.faq-row{
+  background:var(--s2);border:1px solid var(--b1);border-radius:var(--r8);
+  overflow:hidden;
+}
+.faq-row-header{
+  display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;
+}
+.faq-row-q{flex:1;font-size:13px;color:var(--w);}
+.faq-row-handle{cursor:grab;color:var(--m3);}
+.faq-row-body{padding:0 14px 12px;display:none;}
+.faq-row.open .faq-row-body{display:block;}
+.faq-row textarea{margin-top:8px;min-height:70px;}
+.faq-add{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:11px;color:var(--m2);
+  cursor:pointer;padding:8px 0;background:none;border:none;
+  transition:color 0.15s;
+}
+.faq-add:hover{color:var(--accent);}
+
+/* snippet box */
+.snippet-box{
+  background:var(--s2);border:1px solid var(--b1);border-radius:var(--r8);
+  padding:16px 18px;font-family:var(--mono);font-size:12px;color:#b8d670;
+  line-height:1.7;position:relative;
+}
+.snippet-copy{
+  position:absolute;top:10px;right:10px;
+  font-family:var(--mono);font-size:10px;
+  padding:4px 8px;border-radius:var(--r4);
+  background:var(--b2);color:var(--m1);border:none;cursor:pointer;
+  transition:all 0.15s;
+}
+.snippet-copy:hover{background:var(--b3);color:var(--w);}
+.snippet-copy.copied{color:var(--accent);}
+
+/* wz footer */
+.wz-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:32px;padding-top:24px;border-top:1px solid var(--b1);
+}
+
+/* ── GATE EDITOR ── */
+.editor-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
+.editor-panel{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:24px;}
+.editor-section{margin-bottom:28px;}
+.editor-section:last-child{margin-bottom:0;}
+.editor-section-title{
+  font-family:var(--mono);font-size:10px;color:var(--m2);
+  text-transform:uppercase;letter-spacing:0.08em;
+  margin-bottom:16px;padding-bottom:10px;
+  border-bottom:1px solid var(--b1);
+}
+
+/* Preview */
+.preview-sticky{position:sticky;top:20px;}
+.preview-label{font-family:var(--mono);font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;}
+.modal-preview{
+  background:#1e1e1c;border:1px solid var(--b2);border-radius:12px;padding:22px;
+}
+.mp-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;}
+.mp-avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:rgba(96,165,250,0.15);display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;color:var(--blue);border:1px solid rgba(96,165,250,0.2);
+}
+.mp-name{font-size:13px;font-weight:500;color:var(--w);margin-bottom:2px;}
+.mp-tag{font-family:var(--mono);font-size:10px;color:var(--m2);}
+.mp-body{font-size:12px;color:var(--m1);line-height:1.6;margin-bottom:12px;}
+.mp-hint{background:rgba(255,255,255,0.04);border-radius:6px;padding:9px 12px;font-size:11px;color:var(--m2);margin-bottom:14px;line-height:1.5;}
+.mp-btn{
+  width:100%;padding:10px;border-radius:7px;font-family:var(--mono);font-size:11px;font-weight:500;
+  text-align:center;margin-bottom:7px;
+}
+.mp-btn-ghost{background:rgba(255,255,255,0.05);color:var(--m1);}
+.mp-btn-solid{background:var(--w);color:var(--black);}
+.mp-footer{font-family:var(--mono);font-size:10px;color:var(--m3);text-align:center;margin-top:10px;}
+
+/* toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
+.toggle-info .toggle-label{font-size:13px;color:var(--w);margin-bottom:2px;}
+.toggle-info .toggle-desc{font-size:12px;color:var(--m2);}
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{
+  position:absolute;inset:0;border-radius:10px;
+  background:var(--b2);border:1px solid var(--b3);
+  transition:background 0.2s;cursor:pointer;
+}
+.toggle input:checked + .toggle-track{background:var(--accent);}
+.toggle-thumb{
+  position:absolute;top:2px;left:2px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--m2);transition:all 0.2s;pointer-events:none;
+}
+.toggle input:checked ~ .toggle-thumb{left:18px;background:var(--black);}
+
+/* ── EMPTY STATE ── */
+.empty{
+  text-align:center;padding:64px 20px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+}
+.empty-icon{width:48px;height:48px;border-radius:var(--r12);background:var(--b1);display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+.empty-title{font-size:15px;font-weight:500;color:var(--w);}
+.empty-sub{font-size:13px;color:var(--m1);max-width:280px;line-height:1.6;}
+
+/* ── MINI CHART (sparkline) ── */
+.sparkline{display:flex;align-items:flex-end;gap:2px;height:24px;}
+.spark-bar{flex:1;border-radius:2px 2px 0 0;background:var(--accent-bg);min-width:4px;}
+
+/* ── NOTIFICATIONS ── */
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  background:var(--s3);border:1px solid var(--b2);border-radius:var(--r8);
+  padding:12px 16px;font-size:13px;color:var(--w);
+  display:flex;align-items:center;gap:10px;
+  transform:translateY(80px);opacity:0;
+  transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+
+/* responsive */
+@media(max-width:900px){
+  .sidebar{width:60px;}
+  .sb-logo-text,.sb-item span,.sb-badge,.sb-user-name,.sb-user-plan,.sb-section{display:none;}
+  .sb-item{justify-content:center;padding:10px;}
+  .sb-footer{justify-content:center;padding:14px 10px;}
+  .main{margin-left:60px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .editor-layout{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-dot"></div>
+    <span class="sb-logo-text">GateKit</span>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Main</div>
+    <button class="sb-item active" onclick="nav('dashboard')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="sb-item" onclick="nav('gates')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M4 8h8M6 12h4"/></svg>
+      <span>My Gates</span>
+      <span class="sb-badge">2</span>
+    </button>
+    <button class="sb-item" onclick="nav('editor')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 2l3 3-9 9H2v-3L11 2z"/></svg>
+      <span>Gate Editor</span>
+    </button>
+    <div class="sb-section">Account</div>
+    <button class="sb-item" onclick="nav('snippet')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="5,4 1,8 5,12"/><polyline points="11,4 15,8 11,12"/></svg>
+      <span>Install</span>
+    </button>
+    <button class="sb-item" onclick="nav('settings')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-avatar">W</div>
+    <div>
+      <div class="sb-user-name">Wjatscheslaw</div>
+      <div class="sb-user-plan">Free plan</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+
+  <!-- DASHBOARD PAGE -->
+  <div class="page active" id="page-dashboard">
+    <div class="topbar">
+      <span class="topbar-title">Overview</span>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="nav('wizard')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>
+          New gate
+        </button>
+      </div>
+    </div>
+    <div class="page" id="page-dashboard-inner" style="display:block">
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Gate views</div>
+          <div class="stat-val">1,842</div>
+          <div class="stat-delta up">↑ 14% this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Unlocks</div>
+          <div class="stat-val">94</div>
+          <div class="stat-delta up">↑ 5.1% rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Your earnings</div>
+          <div class="stat-val">$79.90</div>
+          <div class="stat-delta up">↑ $12 vs last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Noise blocked</div>
+          <div class="stat-val">1,748</div>
+          <div class="stat-delta" style="color:var(--m2)">94.9% of all visitors</div>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <span class="chart-title">Unlocks vs views — last 14 days</span>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Unlocks</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--b3)"></div>Views</div>
+          </div>
+        </div>
+        <div class="chart-bars" id="chart-bars"></div>
+      </div>
+
+      <!-- Gates table -->
+      <div class="table-wrap">
+        <div class="table-head">
+          <span class="table-title">Your gates</span>
+          <button class="btn btn-ghost btn-sm" onclick="nav('wizard')">+ New gate</button>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Gate</th><th>Status</th><th>Views</th><th>Unlocks</th><th>Rate</th><th>Earnings</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="td-name">main-support</div>
+                <div style="font-family:var(--mono);font-size:10px;color:var(--m2);margin-top:2px">gatekit.io/wjatscheslaw</div>
+              </td>
+              <td><span class="badge badge-green">● Live</span></td>
+              <td>1,421</td>
+              <td>72</td>
+              <td>5.1%</td>
+              <td style="color:var(--accent)">$61.20</td>
+              <td>
+                <div class="td-actions">
+                  <button class="btn btn-ghost btn-sm" onclick="nav('editor')">Edit</button>
+                  <button class="btn btn-ghost btn-sm" onclick="copySnippet('wjatscheslaw')">Copy snippet</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="td-name">consulting-gate</div>
+                <div style="font-family:var(--mono);font-size:10px;color:var(--m2);margin-top:2px">gatekit.io/wjatscheslaw-consulting</div>
+              </td>
+              <td><span class="badge badge-amber">● Draft</span></td>
+              <td>421</td>
+              <td>22</td>
+              <td>5.2%</td>
+              <td style="color:var(--accent)">$18.70</td>
+              <td>
+                <div class="td-actions">
+                  <button class="btn btn-ghost btn-sm" onclick="nav('editor')">Edit</button>
+                  <button class="btn btn-ghost btn-sm">Publish</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIZARD PAGE -->
+  <div class="page" id="page-wizard">
+    <div class="topbar">
+      <span class="topbar-title">New gate — setup wizard</span>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="nav('dashboard')">✕ Cancel</button>
+      </div>
+    </div>
+    <div class="wizard">
+      <!-- Progress -->
+      <div class="wizard-progress">
+        <div class="wz-step">
+          <div class="wz-dot active" id="wdot-1">1</div>
+        </div>
+        <div class="wz-line" id="wline-1"></div>
+        <div class="wz-step">
+          <div class="wz-dot pending" id="wdot-2">2</div>
+        </div>
+        <div class="wz-line" id="wline-2"></div>
+        <div class="wz-step">
+          <div class="wz-dot pending" id="wdot-3">3</div>
+        </div>
+      </div>
+
+      <!-- Step 1: Identity -->
+      <div class="wz-panel active" id="wz-1">
+        <div class="wz-title">Who's behind the gate?</div>
+        <div class="wz-sub">Visitors will see this. Keep it personal — this is you talking directly to them.</div>
+        <div class="field">
+          <label>Your name</label>
+          <input type="text" id="wz-name" placeholder="Marc" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <label>One-line tagline</label>
+          <input type="text" id="wz-tagline" placeholder="I build TrustMRR solo — no team, no VC" oninput="updatePreview()">
+          <div class="field-hint">Keep it honest. Explain why the gate exists.</div>
+        </div>
+        <div class="field">
+          <label>Gate ID (your URL)</label>
+          <input type="text" id="wz-id" placeholder="yourname" oninput="updatePreview()">
+          <div class="field-hint" id="wz-url-preview" style="color:var(--accent);font-family:var(--mono);font-size:11px;">gatekit.io/yourname</div>
+        </div>
+        <div class="wz-footer">
+          <span style="font-family:var(--mono);font-size:11px;color:var(--m2)">Step 1 of 3</span>
+          <button class="btn btn-primary" onclick="wzNext(2)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Pricing + FAQ -->
+      <div class="wz-panel" id="wz-2">
+        <div class="wz-title">Set your price & FAQ</div>
+        <div class="wz-sub">The unlock price filters intent. $1 is the sweet spot — low enough to not feel hostile, high enough to eliminate noise.</div>
+        <div class="field">
+          <label>Unlock price</label>
+          <div class="price-track" id="price-chips">
+            <div class="price-chip selected" onclick="selectPrice(this,'1')">$1</div>
+            <div class="price-chip" onclick="selectPrice(this,'2')">$2</div>
+            <div class="price-chip" onclick="selectPrice(this,'5')">$5</div>
+            <div class="price-chip" onclick="selectPrice(this,'10')">$10</div>
+          </div>
+          <div class="field-hint">You keep 85%. GateKit takes 15% to keep the lights on.</div>
+        </div>
+        <div class="field">
+          <label>FAQ questions <span style="color:var(--m2)">(answer the common ones upfront)</span></label>
+          <div class="faq-list" id="faq-list">
+            <div class="faq-row open">
+              <div class="faq-row-header" onclick="toggleFaqRow(this)">
+                <span style="color:var(--m2);font-size:16px;cursor:grab">⠿</span>
+                <input type="text" value="How does the $1 unlock work?" style="flex:1;background:none;border:none;color:var(--w);font-size:13px;outline:none;cursor:pointer;" onclick="event.stopPropagation()">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="color:var(--m2);flex-shrink:0"><path d="M2 4l4 4 4-4"/></svg>
+              </div>
+              <div class="faq-row-body">
+                <textarea class="field" style="margin:0;width:100%;padding:8px 10px">A one-time payment gives you direct access to support. It's a spam filter, not a subscription.</textarea>
+              </div>
+            </div>
+            <div class="faq-row">
+              <div class="faq-row-header" onclick="toggleFaqRow(this)">
+                <span style="color:var(--m2);font-size:16px;cursor:grab">⠿</span>
+                <input type="text" value="I'm already a paying customer — do I need to pay again?" style="flex:1;background:none;border:none;color:var(--w);font-size:13px;outline:none;cursor:pointer;" onclick="event.stopPropagation()">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="color:var(--m2);flex-shrink:0"><path d="M2 4l4 4 4-4"/></svg>
+              </div>
+              <div class="faq-row-body">
+                <textarea class="field" style="margin:0;width:100%;padding:8px 10px">No. Mention your order email and I'll verify it manually.</textarea>
+              </div>
+            </div>
+          </div>
+          <button class="faq-add" onclick="addFaqRow()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>
+            Add question
+          </button>
+        </div>
+        <div class="wz-footer">
+          <button class="btn btn-ghost" onclick="wzNext(1)">← Back</button>
+          <button class="btn btn-primary" onclick="wzNext(3)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Install -->
+      <div class="wz-panel" id="wz-3">
+        <div class="wz-title">Your gate is ready.</div>
+        <div class="wz-sub">Paste this snippet anywhere you want to intercept visitors — your contact page, email signature, or inside your product.</div>
+        <div class="field">
+          <label>Embed snippet</label>
+          <div class="snippet-box" id="snippet-box">
+&lt;script
+  src="https://cdn.gatekit.io/gate.js"
+  data-id="<span id="snip-id">yourname</span>"
+  data-price="<span id="snip-price">1</span>"
+&gt;&lt;/script&gt;
+
+&lt;!-- Trigger anywhere: --&gt;
+&lt;button data-gk-trigger&gt;Contact support&lt;/button&gt;
+            <button class="snippet-copy" onclick="copySnippetWz()">Copy</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Or link directly</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="text" id="direct-link" value="https://gatekit.io/yourname" readonly style="flex:1;cursor:pointer;" onclick="this.select()">
+            <button class="btn btn-ghost" onclick="copyLink()">Copy</button>
+          </div>
+          <div class="field-hint">Share this link anywhere. It opens the gate directly.</div>
+        </div>
+        <div class="wz-footer">
+          <button class="btn btn-ghost" onclick="wzNext(2)">← Back</button>
+          <button class="btn btn-primary" onclick="finishWizard()">Go to dashboard →</button>
+        </div>
+      </div>
+
+    </div><!-- /wizard -->
+  </div>
+
+  <!-- GATE EDITOR PAGE -->
+  <div class="page" id="page-editor">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-ghost btn-sm" onclick="nav('dashboard')">← Back</button>
+        <span class="topbar-title">main-support</span>
+        <span class="badge badge-green">● Live</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm" onclick="copySnippet('wjatscheslaw')">Copy snippet</button>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Changes saved')">Save changes</button>
+      </div>
+    </div>
+    <div class="page" style="display:block">
+      <div class="editor-layout">
+        <!-- Left: form -->
+        <div>
+          <div class="editor-panel" style="margin-bottom:16px;">
+            <div class="editor-section-title">Identity</div>
+            <div class="editor-section">
+              <div class="field"><label>Name</label><input type="text" value="Wjatscheslaw" oninput="updatePreview()"></div>
+              <div class="field"><label>Tagline</label><input type="text" value="Unternehmensberater für den privaten Haushalt" oninput="updatePreview()"></div>
+              <div class="field"><label>Gate ID</label><input type="text" value="wjatscheslaw" readonly style="color:var(--m2)"><div class="field-hint">gatekit.io/wjatscheslaw</div></div>
+            </div>
+          </div>
+
+          <div class="editor-panel" style="margin-bottom:16px;">
+            <div class="editor-section-title">Unlock settings</div>
+            <div class="editor-section">
+              <div class="field">
+                <label>Unlock price</label>
+                <div class="price-track">
+                  <div class="price-chip selected" onclick="selectPrice(this,'1')">$1</div>
+                  <div class="price-chip" onclick="selectPrice(this,'2')">$2</div>
+                  <div class="price-chip" onclick="selectPrice(this,'5')">$5</div>
+                  <div class="price-chip" onclick="selectPrice(this,'10')">$10</div>
+                </div>
+              </div>
+              <div class="field">
+                <label>Contact URL (after unlock)</label>
+                <input type="url" value="mailto:hello@example.com" placeholder="mailto:you@domain.com">
+                <div class="field-hint">Where verified users land after paying. Can be an email, Typeform, Notion, anything.</div>
+              </div>
+              <div class="field">
+                <label>FAQ link (optional)</label>
+                <input type="url" value="https://example.com/faq" placeholder="https://…">
+              </div>
+            </div>
+          </div>
+
+          <div class="editor-panel" style="margin-bottom:16px;">
+            <div class="editor-section-title">FAQ</div>
+            <div class="editor-section">
+              <div class="faq-list">
+                <div class="faq-row open">
+                  <div class="faq-row-header" onclick="toggleFaqRow(this)">
+                    <span style="color:var(--m2);font-size:16px">⠿</span>
+                    <input type="text" value="How does the $1 unlock work?" style="flex:1;background:none;border:none;color:var(--w);font-size:13px;outline:none;" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="color:var(--m2)"><path d="M2 4l4 4 4-4"/></svg>
+                  </div>
+                  <div class="faq-row-body"><textarea style="width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r6);padding:8px 10px;color:var(--w);font-size:12px;font-family:var(--sans);resize:vertical;outline:none;min-height:60px">A one-time payment gives you lifetime direct support access. Spam filter, not a subscription.</textarea></div>
+                </div>
+                <div class="faq-row">
+                  <div class="faq-row-header" onclick="toggleFaqRow(this)">
+                    <span style="color:var(--m2);font-size:16px">⠿</span>
+                    <input type="text" value="I'm already a paying customer — do I still need to pay?" style="flex:1;background:none;border:none;color:var(--w);font-size:13px;outline:none;" onclick="event.stopPropagation()">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="color:var(--m2)"><path d="M2 4l4 4 4-4"/></svg>
+                  </div>
+                  <div class="faq-row-body"><textarea style="width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r6);padding:8px 10px;color:var(--w);font-size:12px;font-family:var(--sans);resize:vertical;outline:none;min-height:60px">No. Mention your order email and I'll verify manually.</textarea></div>
+                </div>
+              </div>
+              <button class="faq-add" onclick="addFaqRow()">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="1" x2="6" y2="11"/><line x1="1" y1="6" x2="11" y2="6"/></svg>
+                Add question
+              </button>
+            </div>
+          </div>
+
+          <div class="editor-panel">
+            <div class="editor-section-title">Options</div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Show "Powered by GateKit"</div>
+                <div class="toggle-desc">Helps us grow. Remove it with Pro.</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="toggle-row" style="border-top:1px solid var(--b1)">
+              <div class="toggle-info">
+                <div class="toggle-label">Dark mode support</div>
+                <div class="toggle-desc">Modal adapts to visitor's OS preference.</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="toggle-row" style="border-top:1px solid var(--b1)">
+              <div class="toggle-info">
+                <div class="toggle-label">Gate is live</div>
+                <div class="toggle-desc">Unpublish to pause without deleting.</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" checked>
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: live preview -->
+        <div class="preview-sticky">
+          <div class="preview-label">Live preview</div>
+          <div class="modal-preview">
+            <div class="mp-header">
+              <div class="mp-avatar" id="prev-av">W</div>
+              <div>
+                <div class="mp-name" id="prev-name">Wjatscheslaw</div>
+                <div class="mp-tag" id="prev-tag">Unternehmensberater für den privaten Haushalt</div>
+              </div>
+            </div>
+            <p class="mp-body">I build this solo and want to keep it lean. Direct support is reserved for paying customers.</p>
+            <div class="mp-hint">The $1 filters spam — not people. Paying customers get fast, direct replies.</div>
+            <div class="mp-btn mp-btn-ghost">Browse the FAQ →</div>
+            <div class="mp-btn mp-btn-solid" id="prev-btn">Unlock support for $1 →</div>
+            <div class="mp-footer">Existing paid customers automatically get access.</div>
+            <div style="text-align:center;font-family:var(--mono);font-size:9px;color:var(--m3);margin-top:6px">Filtered by GateKit</div>
+          </div>
+
+          <div style="margin-top:16px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r8);padding:16px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">This week</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div><div style="font-family:var(--mono);font-size:10px;color:var(--m2);margin-bottom:4px">Views</div><div style="font-size:20px;color:var(--w);font-weight:300">342</div></div>
+              <div><div style="font-family:var(--mono);font-size:10px;color:var(--m2);margin-bottom:4px">Unlocks</div><div style="font-size:20px;color:var(--accent);font-weight:300">18</div></div>
+              <div><div style="font-family:var(--mono);font-size:10px;color:var(--m2);margin-bottom:4px">Rate</div><div style="font-size:20px;color:var(--w);font-weight:300">5.3%</div></div>
+              <div><div style="font-family:var(--mono);font-size:10px;color:var(--m2);margin-bottom:4px">Earned</div><div style="font-size:20px;color:var(--accent);font-weight:300">$15.30</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTALL PAGE -->
+  <div class="page" id="page-snippet">
+    <div class="topbar"><span class="topbar-title">Install</span></div>
+    <div style="padding:28px;max-width:640px;">
+      <div style="margin-bottom:28px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">Option 1 — script tag</div>
+        <div class="snippet-box">
+&lt;script
+  src="https://cdn.gatekit.io/gate.js"
+  data-id="wjatscheslaw"
+  data-price="1"
+&gt;&lt;/script&gt;
+
+&lt;!-- Then trigger anywhere: --&gt;
+&lt;button data-gk-trigger&gt;Contact support →&lt;/button&gt;
+          <button class="snippet-copy" onclick="copySnippet('wjatscheslaw')">Copy</button>
+        </div>
+      </div>
+      <div style="margin-bottom:28px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">Option 2 — direct link</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" value="https://gatekit.io/wjatscheslaw" readonly style="flex:1;background:var(--s2);border:1px solid var(--b2);border-radius:var(--r8);padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--accent);outline:none;cursor:pointer;" onclick="this.select()">
+          <button class="btn btn-ghost" onclick="copyLink()">Copy</button>
+        </div>
+        <div style="font-size:12px;color:var(--m2);margin-top:8px;">Paste this link in your email signature, Linktree, Notion — anywhere.</div>
+      </div>
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--m2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px">Option 3 — JS API</div>
+        <div class="snippet-box">
+<span style="color:var(--m2)">// Open the gate from your own code</span>
+GateKit.open();
+
+<span style="color:var(--m2)">// Check if visitor already unlocked</span>
+if (GateKit.isVerified()) {
+  showContactForm();
+}
+          <button class="snippet-copy" onclick="showToast('Copied!')">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page" id="page-settings">
+    <div class="topbar"><span class="topbar-title">Settings</span></div>
+    <div style="padding:28px;max-width:520px;display:flex;flex-direction:column;gap:16px;">
+      <div class="editor-panel">
+        <div class="editor-section-title">Account</div>
+        <div class="field"><label>Name</label><input type="text" value="Wjatscheslaw"></div>
+        <div class="field"><label>Email</label><input type="email" value="hello@example.com"></div>
+        <button class="btn btn-primary" onclick="showToast('Saved')">Save</button>
+      </div>
+      <div class="editor-panel">
+        <div class="editor-section-title">Plan</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--w);margin-bottom:4px;">Free plan</div>
+            <div style="font-size:12px;color:var(--m2);">1 gate · GateKit branding · 85% revenue share</div>
+          </div>
+          <span class="badge badge-blue">Active</span>
+        </div>
+        <button class="btn btn-primary" style="width:100%">Upgrade to Pro — $9/mo →</button>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--m2);text-align:center;margin-top:10px;">Unlimited gates · remove branding · analytics</div>
+      </div>
+      <div class="editor-panel">
+        <div class="editor-section-title">Stripe payouts</div>
+        <div style="font-size:13px;color:var(--m1);margin-bottom:14px;line-height:1.65;">Connect your Stripe account to receive payouts from gate unlocks. GateKit keeps 15%.</div>
+        <button class="btn btn-ghost" style="width:100%">Connect Stripe →</button>
+      </div>
+      <div class="editor-panel">
+        <div class="editor-section-title" style="color:var(--red)">Danger zone</div>
+        <button class="btn btn-danger" style="width:100%">Delete account</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div><!-- /app -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="toast-dot"></div>
+  <span id="toast-msg">Copied!</span>
+</div>
+
+<script>
+// ── Navigation ──────────────────────────────────────────────────────────────
+const pages = ['dashboard','wizard','editor','snippet','settings'];
+function nav(id) {
+  pages.forEach(p => {
+    document.getElementById('page-'+p).classList.remove('active');
+  });
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  const map = {dashboard:0,gates:1,editor:2,snippet:3,settings:4};
+  const items = document.querySelectorAll('.sb-item');
+  if (map[id] !== undefined) items[map[id]]?.classList.add('active');
+  if (id === 'wizard') { wzStep = 1; renderWz(); }
+}
+
+// ── Wizard ──────────────────────────────────────────────────────────────────
+let wzStep = 1;
+function wzNext(step) {
+  wzStep = step;
+  renderWz();
+  if (step === 3) {
+    const id = document.getElementById('wz-id')?.value || 'yourname';
+    const price = document.querySelector('.price-chip.selected')?.textContent?.replace('$','') || '1';
+    document.getElementById('snip-id').textContent = id;
+    document.getElementById('snip-price').textContent = price;
+    document.getElementById('direct-link').value = 'https://gatekit.io/' + id;
+  }
+}
+function renderWz() {
+  [1,2,3].forEach(i => {
+    document.getElementById('wz-'+i).classList.toggle('active', i === wzStep);
+    const dot = document.getElementById('wdot-'+i);
+    dot.className = 'wz-dot ' + (i < wzStep ? 'done' : i === wzStep ? 'active' : 'pending');
+    dot.textContent = i < wzStep ? '✓' : i;
+  });
+  [1,2].forEach(i => {
+    const line = document.getElementById('wline-'+i);
+    if (line) line.className = 'wz-line' + (i < wzStep ? ' done' : '');
+  });
+}
+document.getElementById('wz-id').addEventListener('input', function() {
+  document.getElementById('wz-url-preview').textContent = 'gatekit.io/' + (this.value || 'yourname');
+});
+function finishWizard() { showToast('Gate created!'); nav('dashboard'); }
+
+// ── Price chips ─────────────────────────────────────────────────────────────
+function selectPrice(el, price) {
+  el.closest('.price-track').querySelectorAll('.price-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('prev-btn').textContent = 'Unlock support for $' + price + ' →';
+}
+
+// ── FAQ rows ─────────────────────────────────────────────────────────────────
+function toggleFaqRow(header) {
+  const row = header.closest('.faq-row');
+  row.classList.toggle('open');
+}
+function addFaqRow() {
+  const list = document.getElementById('faq-list') || document.querySelector('.faq-list');
+  const row = document.createElement('div');
+  row.className = 'faq-row open';
+  row.innerHTML = `
+    <div class="faq-row-header" onclick="toggleFaqRow(this)">
+      <span style="color:var(--m2);font-size:16px">⠿</span>
+      <input type="text" placeholder="Enter question…" style="flex:1;background:none;border:none;color:var(--w);font-size:13px;outline:none;" onclick="event.stopPropagation()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="color:var(--m2)"><path d="M2 4l4 4 4-4"/></svg>
+    </div>
+    <div class="faq-row-body"><textarea style="width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r6);padding:8px 10px;color:var(--w);font-size:12px;font-family:var(--sans);resize:vertical;outline:none;min-height:60px" placeholder="Answer…"></textarea></div>
+  `;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+}
+
+// ── Live preview ─────────────────────────────────────────────────────────────
+function updatePreview() {
+  const name = document.getElementById('wz-name')?.value || document.querySelector('[oninput="updatePreview()"]')?.value || 'Wjatscheslaw';
+  const tag = document.getElementById('wz-tagline')?.value || '';
+  if (document.getElementById('prev-name')) document.getElementById('prev-name').textContent = name || 'Your name';
+  if (document.getElementById('prev-tag')) document.getElementById('prev-tag').textContent = tag || 'Your tagline';
+  const av = document.getElementById('prev-av');
+  if (av) av.textContent = (name[0] || 'G').toUpperCase();
+}
+
+// ── Chart ────────────────────────────────────────────────────────────────────
+function buildChart() {
+  const container = document.getElementById('chart-bars');
+  if (!container) return;
+  const days = ['M','T','W','T','F','S','S','M','T','W','T','F','S','S'];
+  const views = [120,95,180,145,200,88,42,160,140,190,175,220,110,64];
+  const unlocks = [6,5,9,7,11,4,2,8,7,10,9,12,5,3];
+  const maxV = Math.max(...views);
+  container.innerHTML = days.map((d,i) => {
+    const vPct = Math.round(views[i]/maxV*90);
+    const uPct = Math.round(unlocks[i]/maxV*90);
+    return `<div class="bar-group">
+      <div class="bar-stack" style="height:${vPct}px">
+        <div class="bar" style="background:var(--b3);flex:1" title="${views[i]} views"></div>
+      </div>
+      <div class="bar-stack" style="height:${uPct}px;margin-top:-${uPct}px;pointer-events:none">
+        <div class="bar" style="background:var(--accent);flex:1;opacity:0.85" title="${unlocks[i]} unlocks"></div>
+      </div>
+      <span class="bar-label">${d}</span>
+    </div>`;
+  }).join('');
+}
+buildChart();
+
+// ── Snippet / copy ───────────────────────────────────────────────────────────
+function copySnippet(id) {
+  const snippet = `<script src="https://cdn.gatekit.io/gate.js" data-id="${id}" data-price="1"><\/script>\n<button data-gk-trigger>Contact support →</button>`;
+  navigator.clipboard.writeText(snippet).catch(()=>{});
+  showToast('Snippet copied!');
+}
+function copySnippetWz() {
+  showToast('Snippet copied!');
+  document.querySelector('#snippet-box .snippet-copy').textContent = 'Copied!';
+  document.querySelector('#snippet-box .snippet-copy').classList.add('copied');
+  setTimeout(()=>{
+    document.querySelector('#snippet-box .snippet-copy').textContent = 'Copy';
+    document.querySelector('#snippet-box .snippet-copy').classList.remove('copied');
+  }, 2000);
+}
+function copyLink() {
+  showToast('Link copied!');
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+</script>
+</body>
+</html>
