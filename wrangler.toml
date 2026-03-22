@@ -17,9 +17,5 @@ binding = "DB"
 database_name = "gatekit-db"
 database_id   = "YOUR_D1_DATABASE_ID"   # replace after: wrangler d1 create gatekit-db
 
-[[r2_buckets]]
-binding = "ASSETS"
-bucket_name = "gatekit-assets"           # for future file uploads
-
 [dev]
 port = 8787
