@@ -6,7 +6,7 @@
   const GATE_ID = script?.getAttribute('data-id') || 'demo';
   const UNLOCK_PRICE = parseFloat(script?.getAttribute('data-price') || '1');
   const BRAND = script?.getAttribute('data-brand') !== 'false';
-  const API_BASE = script?.getAttribute('data-api') || 'https://api.gatekit.io';
+  const API_BASE = script?.getAttribute('data-api') || 'https://gatekit-api.sourcecodecreative.workers.dev';
   const STORAGE_KEY = 'gk_verified_' + GATE_ID;
 
   // ── Verified check ──────────────────────────────────────────────────────────
